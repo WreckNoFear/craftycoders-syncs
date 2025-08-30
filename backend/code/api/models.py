@@ -54,7 +54,7 @@ class CarbonFootprint(models.Model):
     perform carbon emission calculations.
     """
     # trip = models.ForeignKey(TripInfo, on_delete=models.CASCADE, related_name='carbon_footprints')
-    trip = models.OneToOneField(TripInfo, on_delete=models.CASCADE)
+    trip = models.OneToOneField(TripInfo, on_delete=models.CASCADE, primary_key=True)
     distance_km = models.FloatField(default=0.0)
     carbon_emissions_saved_kg = models.FloatField(default=0.0)
 

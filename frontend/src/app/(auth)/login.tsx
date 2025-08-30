@@ -9,7 +9,8 @@ import Toast from "react-native-toast-message";
 import Logo from "@/src/components/logo";
 import { Link, router } from "expo-router";
 import { styles } from "@/src/styles/css/auth";
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from "expo-secure-store";
+import { useEffect } from "react";
 
 const formSchema = z.object({
   username: z.string().min(1, {
@@ -26,6 +27,26 @@ const formSchema = z.object({
 });
 
 export default function Login() {
+  useEffect(() => {
+    const checkIsAuthenticated = async () => {
+      try {
+        const AUTH_TOKEN = await SecureStore.getItemAsync("AUTH_TOKEN");
+
+        if (AUTH_TOKEN) {
+          router.push("/(tabs)");
+        }
+      } catch (error) {
+        console.error("Failed to check if user is authenticated");
+        Toast.show({
+          type: "error",
+          text1: "Failed to check if user is authenticated",
+        });
+      }
+    };
+
+    checkIsAuthenticated();
+  }, []);
+
   const { handleSubmit, formState, ...form } = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -41,7 +62,7 @@ export default function Login() {
       if (error || !token) throw error;
 
       if (token) {
-        await SecureStore.setItemAsync('AUTH_TOKEN', token);
+        await SecureStore.setItemAsync("AUTH_TOKEN", token);
       }
 
       Toast.show({
