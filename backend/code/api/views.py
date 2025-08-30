@@ -75,12 +75,12 @@ def set_carbonfootprint(request):
     """
     if request.method == "POST":
         data = json.loads(request.body)
-        carbonfootprint_id = data.get("trip")
+        trip_id = data.get("trip")
 
         try:
-            trip = TripInfo.objects.get(id=carbonfootprint_id)
+            trip = TripInfo.objects.get(id=trip_id)
             transport_type = trip.get("origin_transport_type")
-            distance_km = carbonfootprint_id.get("distance_km")
+            distance_km = trip_id.get("distance_km")
         except TripInfo.DoesNotExist:
             return JsonResponse({"error": "TripInfo not found for carbon footprint"}, status=404)
 
@@ -97,6 +97,7 @@ def set_carbonfootprint(request):
         carbon_emissions_car_kg = distance_km * 0.17  # 0.17 kg CO2 per km for cars (diesel)
         carbon_emissions_saved_kg= carbon_emissions_car_kg - carbon_emissions_transport_kg
         cf, created = CarbonFootprint.objects.get_or_create(trip=trip)
+        cf.distance_km = distance_km # could be changed so that we automatically calulate - alex
         cf.carbon_emissions_saved_kg = carbon_emissions_saved_kg
         cf.save()
 
@@ -114,7 +115,26 @@ def set_carbonfootprint(request):
 #         return JsonResponse({"message": "Carbon footprint created"})
 # >>>>>>> fac9e1f4d7fcd6ec8ece2ce11ec07fe75a330c52
 
-        
+
+def CrowdSourcedData(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        trip = data.get("trip")
+        comments = data.get("comments")
+        transport_officer = data.get("transport_officer")
+        is_delay = data.get("is_delay")
+        cleanliness = data.get("cleanliness")
+        crowdedness = data.get("crowdedness")
+        carriage_number = data.get("carriage_number")
+        CrowdSourcedData.objects.create(
+            trip=trip, 
+            comments=comments, 
+            transport_officer=transport_officer, 
+            is_delay=is_delay, 
+            cleanliness=cleanliness, 
+            crowdedness=crowdedness, 
+            carriage_number=carriage_number)
+        return JsonResponse({"message": "CrowdSourcedData created"})
 
 @csrf_exempt
 def request_locations(request):
