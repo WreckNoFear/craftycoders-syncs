@@ -21,8 +21,6 @@ def index(request):
 
 
 # views.py
-
-
 @csrf_exempt
 def register_user(request):
     if request.method == "POST":
@@ -37,6 +35,7 @@ def register_user(request):
         token, created = Token.objects.get_or_create(user=user)
 
         return JsonResponse({"token": token.key})
+
 
 def get_locs():
     url = "https://api.transport.nsw.gov.au/v1/gtfs/vehiclepos/buses"
@@ -105,15 +104,6 @@ def set_carbonfootprint(request):
             "message": "Carbon footprint successfully updated.",
             "carbon_emissions_saved_kg": carbon_emissions_saved_kg,
             })
-
-#         CarbonFootprint.objects.create(
-#             trip=trip,
-#             distance_km=distance_km,
-#             carbon_emissions_transport_kg=carbon_emissions_transport_kg,
-#             carbon_emissions_car_kg=carbon_emissions_car_kg
-#         )
-#         return JsonResponse({"message": "Carbon footprint created"})
-# >>>>>>> fac9e1f4d7fcd6ec8ece2ce11ec07fe75a330c52
 
 
 @csrf_exempt 
