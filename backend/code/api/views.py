@@ -6,6 +6,8 @@ from django.contrib.auth import login, authenticate, logout
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.authtoken.models import Token
+import requests
+from google.transit import gtfs_realtime_pb2
 
 from rest_framework.views import APIView
 import json
@@ -35,7 +37,25 @@ def register_user(request):
         token, created = Token.objects.get_or_create(user=user)
 
         return JsonResponse({"token": token.key})
-        
+
+def get_locs():
+    url = "https://api.transport.nsw.gov.au/v1/gtfs/vehiclepos/buses"
+
+    headers = {
+        "Authorization": f"apikey {API_KEY}"
+    }
+
+    feed = gtfs_realtime_pb2.FeedMessage()
+    response = requests.get("https://api.transport.nsw.gov.au/v2/gtfs/vehiclepos/sydneytrains", headers=headers)
+    feed.ParseFromString(response.content)
+    out_list = []
+    for entity in feed.entity:
+        if entity.HasField("vehicle"):
+            vp = entity.vehicle
+            print(f"Vehicle {vp.vehicle.id}: {vp.position.latitude}, {vp.position.longitude}")
+            out_list.append({"latitude": vp.position.latitude, "longitude":vp.position.longitude})
+    return out_list
+
 
 @csrf_exempt
 def request_trips(request):
@@ -64,7 +84,7 @@ def set_carbonfootprint(request):
         except TripInfo.DoesNotExist:
             return JsonResponse({"error": "TripInfo not found for carbon footprint"}, status=404)
 
-        # Get emissions savings by comparing public transport to car
+        # Get emissions savings by getting difference between public transport to car
         # We hard coded values for now
         # Can be expanded later on to include other transport types and conditions to improve accuracy
         if transport_type == "Train":
@@ -73,10 +93,9 @@ def set_carbonfootprint(request):
             carbon_emissions_transport_kg = distance_km * 0.00  # 0.00 kg CO2 per km for metro
         else:
             carbon_emissions_transport_kg = distance_km * 0.1   # Default value
+    
         carbon_emissions_car_kg = distance_km * 0.17  # 0.17 kg CO2 per km for cars (diesel)
-
         carbon_emissions_saved_kg= carbon_emissions_car_kg - carbon_emissions_transport_kg
-
         cf, created = CarbonFootprint.objects.get_or_create(trip=trip)
         cf.carbon_emissions_saved_kg = carbon_emissions_saved_kg
         cf.save()
@@ -86,4 +105,21 @@ def set_carbonfootprint(request):
             "carbon_emissions_saved_kg": carbon_emissions_saved_kg,
             })
 
+#         CarbonFootprint.objects.create(
+#             trip=trip,
+#             distance_km=distance_km,
+#             carbon_emissions_transport_kg=carbon_emissions_transport_kg,
+#             carbon_emissions_car_kg=carbon_emissions_car_kg
+#         )
+#         return JsonResponse({"message": "Carbon footprint created"})
+# >>>>>>> fac9e1f4d7fcd6ec8ece2ce11ec07fe75a330c52
+
         
+
+@csrf_exempt
+def request_locations(request):
+    if request.method == "GET":
+        locs = dict()
+        locs['train_locations'] = get_locs()
+        print(locs)
+        return JsonResponse(locs)
