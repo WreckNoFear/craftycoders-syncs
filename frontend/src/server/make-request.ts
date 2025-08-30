@@ -1,10 +1,18 @@
-export default async function makeRequest(url: string, method: RequestInit['method'] = 'GET', body: Record<string, any> | null = null) {
+import * as SecureStore from "expo-secure-store";
+
+export default async function makeRequest(
+  url: string,
+  method: RequestInit["method"] = "GET",
+  body: Record<string, any> | null = null
+) {
   try {
+    const AUTH_TOKEN = await SecureStore.getItemAsync("AUTH_TOKEN");
+
     let requestOptions: RequestInit = {
       method,
       headers: {
-        // Authorization: `Bearer ${access_token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Token ${AUTH_TOKEN}`,
+        "Content-Type": "application/json",
       },
     };
 
@@ -12,8 +20,11 @@ export default async function makeRequest(url: string, method: RequestInit['meth
       requestOptions.body = JSON.stringify(body);
     }
 
-    const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL!}/api${url}/`, requestOptions);
-  
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_API_URL!}/api${url}/`,
+      requestOptions
+    );
+
     if (!response.ok) {
       const res = await response.json();
       throw new Error(res?.message);
@@ -21,7 +32,7 @@ export default async function makeRequest(url: string, method: RequestInit['meth
 
     return response.json();
   } catch (error) {
-    console.log('Request error: ', error);
+    console.log("Request error: ", error);
     throw error;
   }
 }

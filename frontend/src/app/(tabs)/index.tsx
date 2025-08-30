@@ -1,11 +1,12 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import Logo from "@/src/components/logo";
-import { Clock, Leaf, Search, Star, UserCircle } from "lucide-react-native";
+import { Clock, Leaf, Star, UserCircle } from "lucide-react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { ReactElement } from "react";
 import Button from "@/src/components/button";
 import { Theme } from "@/src/styles/theme";
 import ProfileIcon from "@/src/components/profileicon";
+import { router } from "expo-router";
 
 type ButtonProps = {
   id: string;
@@ -45,9 +46,12 @@ const Home = () => {
   return (
     <View style={styles.container}>
       <Logo />
+      <UserCircle />
 
-
-      <Button style={styles.whereButton}>
+      <Button
+        style={styles.whereButton}
+        onPress={() => router.push("/(tabs)/trip")}
+      >
         <Text style={styles.whereButtonText}>Where to next?</Text>
       </Button>
 
@@ -72,9 +76,6 @@ const BigButton = ({ item }: { item: ButtonProps }) => {
     </TouchableOpacity>
   );
 };
-
-
-
 
 const styles = StyleSheet.create({
   container: {

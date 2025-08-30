@@ -9,6 +9,7 @@ import Toast from "react-native-toast-message";
 import Logo from "@/src/components/logo";
 import { Link, router } from "expo-router";
 import { styles } from "@/src/styles/css/auth";
+import * as SecureStore from 'expo-secure-store';
 
 const formSchema = z.object({
   username: z.string().min(1, {
@@ -35,9 +36,13 @@ export default function Login() {
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
-      const { error } = await logInUser({ data });
+      const { error, token } = await logInUser({ data });
 
-      if (error) throw error;
+      if (error || !token) throw error;
+
+      if (token) {
+        await SecureStore.setItemAsync('AUTH_TOKEN', token);
+      }
 
       Toast.show({
         type: "success",

@@ -7,7 +7,7 @@ export async function signUpUser({ data: values }: SignUpProps) {
   try {
     const data = await makeRequest(`/register`, "POST", values);
 
-    return data.data;
+    return data;
   } catch (error) {
     kdebug("Request error: ", error);
     return { error: (error as Error)?.message };
@@ -20,7 +20,7 @@ export async function logInUser({ data: values }: LogInProps) {
   try {
     const data = await makeRequest(`/token-auth`, "POST", values);
 
-    return data.data;
+    return data;
   } catch (error) {
     kdebug("Request error: ", error);
     return { error: (error as Error)?.message };

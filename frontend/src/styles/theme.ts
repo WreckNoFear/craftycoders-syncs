@@ -6,6 +6,8 @@ export const Theme = {
     GRAY: "#404040",
     TEXT: "#1A1A1A",
     DESTRUCTIVE: "#EF4444",
+    METRO: "#168388",
+    TRAIN: "#F37021",
   },
 
   FONT: {
