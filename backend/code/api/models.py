@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinLengthValidator
 
 # Create your models here.
 
@@ -44,5 +45,5 @@ class CrowdsourcedData(models.Model):
     is_delay = models.BooleanField(default=False)
     cleanliness = models.IntegerField(default=5)
     crowdedness = models.IntegerField(default=5)
-    carriage_number = models.CharField(max_length=4, min_length=4)
+    carriage_number = models.CharField(max_length=4, validators=[MinLengthValidator(4)])
     # can add more later.
