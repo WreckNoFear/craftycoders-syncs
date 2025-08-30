@@ -8,6 +8,8 @@ export const Theme = {
     DESTRUCTIVE: "#EF4444",
     METRO: "#168388",
     TRAIN: "#F37021",
+    GREEN: "#87AC6C",
+    DARK_GREEN: "#214C00",
   },
 
   FONT: {

@@ -15,6 +15,7 @@ import { Poppins_700Bold } from "@expo-google-fonts/poppins/700Bold";
 import { Poppins_800ExtraBold } from "@expo-google-fonts/poppins/800ExtraBold";
 import { Poppins_900Black } from "@expo-google-fonts/poppins/900Black";
 import { Loader } from "lucide-react-native";
+import { Theme } from "../styles/theme";
 
 export default function RootLayout() {
   const [isFontsLoaded] = useFonts({
@@ -35,7 +36,7 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView>
-      <SafeAreaProvider>
+      <SafeAreaProvider style={{ backgroundColor: Theme.COLORS.PRIMARY }}>
         <SafeAreaView style={{ flex: 1 }}>
           <StatusBar style="dark" translucent backgroundColor="transparent" />
           <Stack screenOptions={{ headerShown: false }} />

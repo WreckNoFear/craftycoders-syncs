@@ -29,7 +29,7 @@ export default async function makeRequest(
       const res = await response.json();
       throw new Error(res?.message);
     }
-
+    
     return response.json();
   } catch (error) {
     console.log("Request error: ", error);

@@ -5,7 +5,7 @@ type SignUpProps = { data: { username: string; first_name: string; password: str
 
 export async function signUpUser({ data: values }: SignUpProps) {
   try {
-    const data = await makeRequest(`/register`, "POST", values);
+    const data = await makeRequest("/register", "POST", values);
 
     return data;
   } catch (error) {
@@ -18,7 +18,7 @@ type LogInProps = { data: { username: string; password: string } };
 
 export async function logInUser({ data: values }: LogInProps) {
   try {
-    const data = await makeRequest(`/token-auth`, "POST", values);
+    const data = await makeRequest("/token-auth", "POST", values);
 
     return data;
   } catch (error) {
