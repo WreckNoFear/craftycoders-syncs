@@ -115,8 +115,9 @@ def set_carbonfootprint(request):
 #         return JsonResponse({"message": "Carbon footprint created"})
 # >>>>>>> fac9e1f4d7fcd6ec8ece2ce11ec07fe75a330c52
 
+
 @csrf_exempt 
-def CrowdSourcedData(request):
+def retrieve_crowdsourcedata(request):
     if request.method == "POST":
         data = json.loads(request.body)
         trip_id = data.get("trip")
@@ -139,6 +140,7 @@ def CrowdSourcedData(request):
             crowdedness=crowdedness, 
             carriage_number=carriage_number)
         return JsonResponse({"message": "CrowdSourcedData created"})
+
 
 @csrf_exempt
 def request_locations(request):
