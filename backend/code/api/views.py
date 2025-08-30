@@ -5,8 +5,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate, logout
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from api.serializers import TripInfoSerializer
+from rest_framework.views import APIView
 import json
+from nextstop.settings import API_KEY
 tnsw = TransportNSWv2()
 
 
@@ -57,6 +58,6 @@ def request_trips(request):
         data = json.loads(request.body)
         start = data.get("start_id")
         end = data.get("end_id")
-        journey = tnsw.get_trip(start, end, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJITEEtenFmTklLaFphczA2OVl3dFF6T0NpSndsc0xxakdIYmhLNVdrWU9JIiwiaWF0IjoxNzU2NTI4NTQyfQ.hVUH4cyrgQq1aLnQ56ZeI_HX5rHmAZCiRP_FgYS__Ac', 5)
+        journey = tnsw.get_trip(start, end, API_KEY, 5)
         out = json.loads(journey)
         return JsonResponse(out)
