@@ -8,7 +8,7 @@ import {
   Platform,
   TouchableOpacity,
 } from "react-native";
-import MapView, { Marker } from "react-native-maps";
+import MapView, { Marker, Point, Polyline } from "react-native-maps";
 import Toast from "react-native-toast-message";
 import { FlatList, TextInput } from "react-native-gesture-handler";
 import * as Location from "expo-location";
@@ -21,17 +21,23 @@ import {
 import { styles } from "@/src/styles/css/trip";
 import { getNearestStation } from "@/src/helpers/nearest-station";
 import TransportIcon from "@/src/components/transport-icon";
-import { Navigation } from "lucide-react-native";
-
-type Point = { latitude: number; longitude: number };
+import { Navigation, X } from "lucide-react-native";
+import { Trip as TripType, Point as PointType } from "@/src/types/custom.types";
+import { Theme } from "@/src/styles/theme";
 
 const Trip = () => {
-  const [searchFocused, setSearchFocused] = useState<boolean>(false);
+  const [searchFocused, setSearchFocused] = useState(false);
   const [filteredLocations, setFilteredLocations] =
     useState<MapLocation[]>(railLoactions);
   const [searchText, setSearchText] = useState<string>("");
   const [selected, setSelected] = useState<MapLocation | undefined>(undefined);
-  const [trainLocations, setTrainLocations] = useState<Point[]>([]);
+  const [trainLocations, setTrainLocations] = useState<PointType[]>([]);
+  const [journeys, setJourneys] = useState<TripType[]>([]);
+  const [selectedJourney, setSelectedJourney] = useState<TripType["legs"]>();
+  const [nearestStation, setNearestStation] = useState<MapLocation | undefined>(
+    undefined
+  );
+  const [selectedService, setSelectedService] = useState();
 
   const mapRef = useRef<MapView>(null);
   const inputRef = useRef<TextInput>(null);
@@ -69,8 +75,10 @@ const Trip = () => {
   useEffect(() => {
     const fetchTrainLocations = async () => {
       try {
-        const { train_locations } = await getTrainLocations();
-        setTrainLocations(train_locations);
+        const { train_info, error } = await getTrainLocations();
+        if (error) throw error;
+
+        setTrainLocations(train_info);
       } catch (err) {
         console.error("Failed to fetch train locations:", err);
         Toast.show({
@@ -128,22 +136,21 @@ const Trip = () => {
         }
 
         const location = await getNearestStation();
+        setNearestStation(location?.station);
         if (!location) {
           throw new Error("Failed to find nearest station location");
         }
 
-        const { error, data } = await getTripsByLocation({
+        const { journeys, error } = await getTripsByLocation({
           data: {
             start_id: String(location?.station.TSN),
             end_id: String(selected.TSN),
           },
         });
 
-        console.log(error, data);
-
         if (error) throw error;
 
-        console.log("RESULTS DATA: ", data);
+        setJourneys(journeys);
       } catch (error) {
         console.error("Failed to get trip results: ", error);
         Toast.show({
@@ -181,6 +188,20 @@ const Trip = () => {
     }
   };
 
+  const handleReturnToSelectedStation = async () => {
+    if (mapRef.current) {
+      mapRef.current.animateToRegion(
+        {
+          latitude: selected?.LATITUDE ?? 0,
+          longitude: selected?.LONGITUDE ?? 0,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        },
+        500
+      );
+    }
+  };
+
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <View style={styles.innerContainer}>
@@ -191,7 +212,10 @@ const Trip = () => {
             style={styles.searchFrom}
             onChangeText={(text) => setSearchText(text)}
             onBlur={() => setSearchFocused(false)}
-            onFocus={() => setSearchFocused(true)}
+            onFocus={() => {
+              setSearchFocused(true);
+              inputRef.current?.clear();
+            }}
             placeholder="Where to next?"
             autoFocus={false}
             autoComplete="off"
@@ -220,14 +244,51 @@ const Trip = () => {
                 <Navigation />
               </TouchableOpacity>
               <View style={styles.selectedView}>
-                <ResultItem item={selected} />
+                <ResultItem
+                  item={selected}
+                  onPress={handleReturnToSelectedStation}
+                />
               </View>
-              {/* <View style={styles.resultsOverlay}>
-                <View>Results go here</View>
-              </View> */}
             </>
           )}
         </View>
+
+        {journeys.length > 0 && (
+          <View style={styles.resultsOverlay}>
+            <View style={styles.resultsHeader}>
+              <Text style={styles.resultsText}>Next Services</Text>
+              <X onPress={() => setJourneys([])} />
+            </View>
+            <FlatList
+              data={journeys}
+              renderItem={({ item }) => (
+                <TripItem
+                  item={item}
+                  setSelectedJourney={setSelectedJourney}
+                  selected={selected}
+                  nearestStation={nearestStation}
+                />
+              )}
+              keyExtractor={(item, index) =>
+                `${index}-${item.arrival_time}-${item.departure_time}`
+              }
+              numColumns={1}
+              style={styles.resultsContainer}
+            />
+          </View>
+        )}
+
+        {selectedService && (
+          <View
+            style={[styles.resultsOverlay, styles.resultsOverlayWithBigIndex]}
+          >
+            <View style={styles.resultsHeader}>
+              <Text style={styles.resultsText}>Service at {}</Text>
+              <X onPress={() => setJourneys([])} />
+            </View>
+          </View>
+        )}
+
         <KeyboardAvoidingView
           style={styles.container}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -236,7 +297,7 @@ const Trip = () => {
             {trainLocations &&
               trainLocations.map((location, index) => (
                 <Marker
-                  key={index}
+                  key={`marker-${index}-${location.latitude}-${location.longitude}`}
                   coordinate={{
                     latitude: location.latitude,
                     longitude: location.longitude,
@@ -245,6 +306,16 @@ const Trip = () => {
                   description={`Latitude: ${location.latitude}, Longitude: ${location.longitude}`}
                 />
               ))}
+            {selectedJourney?.map((leg) => (
+              <Polyline
+                coordinates={leg.path?.map((point) => ({
+                  latitude: point.latitude,
+                  longitude: point.longitude,
+                }))}
+                strokeColor={Theme.COLORS.PRIMARY}
+                strokeWidth={6}
+              />
+            ))}
           </MapView>
         </KeyboardAvoidingView>
       </View>
@@ -257,9 +328,11 @@ export default Trip;
 const ResultItem = ({
   item,
   setSelected,
+  onPress,
 }: {
   item?: MapLocation;
   setSelected?: (l: MapLocation) => void;
+  onPress?: () => void;
 }) => {
   if (!item) return null;
 
@@ -271,7 +344,10 @@ const ResultItem = ({
     <TouchableOpacity
       style={styles.resultItem}
       onPress={() => {
-        if (setSelected) {
+        if (onPress) {
+          onPress();
+          return;
+        } else if (setSelected) {
           setSelected(item);
         }
       }}
@@ -281,6 +357,74 @@ const ResultItem = ({
         {transportModes.includes("Train") && <TransportIcon type="train" />}
       </View>
       <Text>{item.LOCATION_NAME}</Text>
+    </TouchableOpacity>
+  );
+};
+
+const TripItem = ({
+  item,
+  setSelectedJourney,
+  selected,
+  nearestStation,
+}: {
+  item: TripType;
+  setSelectedJourney: (v: TripType["legs"]) => void;
+  selected?: MapLocation;
+  nearestStation?: MapLocation;
+}) => {
+  const transportModesTo = selected?.TRANSPORT_MODE.split(",").map((mode) =>
+    mode.trim()
+  );
+  const transportModesFrom = nearestStation?.TRANSPORT_MODE.split(",").map(
+    (mode) => mode.trim()
+  );
+
+  return (
+    <TouchableOpacity
+      style={styles.cardContainer}
+      activeOpacity={0.7}
+      onPress={() => setSelectedJourney(item.legs)}
+    >
+      <View style={styles.cardSectionSpaced}>
+        <View style={styles.stationNamesContainer}>
+          <View style={styles.cardInner}>
+            <View>
+              <Text style={styles.cardInnerTitle}>
+                {nearestStation?.LOCATION_NAME}
+              </Text>
+              <Text>{new Date(item.arrival_time).toLocaleTimeString()}</Text>
+            </View>
+            <View style={styles.trainIcons}>
+              {transportModesFrom?.includes("Metro") && (
+                <TransportIcon type="metro" />
+              )}
+              {transportModesFrom?.includes("Train") && (
+                <TransportIcon type="train" />
+              )}
+            </View>
+          </View>
+          <View>
+            <View style={styles.cardInner}>
+              <View>
+                <Text style={styles.cardInnerTitle}>
+                  {selected?.LOCATION_NAME}
+                </Text>
+                <Text>
+                  {new Date(item.departure_time).toLocaleTimeString()}
+                </Text>
+              </View>
+              <View style={styles.trainIcons}>
+                {transportModesTo?.includes("Metro") && (
+                  <TransportIcon type="metro" />
+                )}
+                {transportModesTo?.includes("Train") && (
+                  <TransportIcon type="train" />
+                )}
+              </View>
+            </View>
+          </View>
+        </View>
+      </View>
     </TouchableOpacity>
   );
 };

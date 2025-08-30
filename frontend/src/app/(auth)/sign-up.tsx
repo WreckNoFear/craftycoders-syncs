@@ -148,6 +148,7 @@ export default function SignUp() {
                 onChangeText={onChange}
                 value={value}
                 placeholder="Enter a password"
+                secureTextEntry
               />
             )}
           />
