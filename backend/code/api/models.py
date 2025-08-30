@@ -7,6 +7,12 @@ class TripInfo(models.Model):
     """
     TripInfo represents data retrieved by the TransportNSW API.
     """
+    # Could use an ENUM for transport type
+    # class transport_type(models.TextChoices):
+    #     TRAIN = 'Train', 'Train'
+    #     METRO = 'Metro', 'Metro'
+    #     LIGHTRAIL = 'Light Rail', 'Light Rail'
+
     due = models.IntegerField()
     origin_stop_id = models.CharField(max_length=200)
     origin_name = models.CharField(max_length=200)
