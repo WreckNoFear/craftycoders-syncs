@@ -21,6 +21,8 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework import status
+from django.utils import timezone
 
 def index(request):
     return HttpResponse("Hello, world. You're at the api index.")
@@ -61,7 +63,8 @@ def vehicle_info_retrieve(end):
                 vehicle = "train"
             else:
                 vehicle = "unknown"
-            out_list.append({"trip_id": vp.trip.trip_id, "latitude": vp.position.latitude, "longitude":vp.position.longitude, 'vehicle':vehicle})
+            stop = vp.stop_id
+            out_list.append({"trip_id": vp.trip.trip_id, "latitude": vp.position.latitude, "longitude":vp.position.longitude, 'vehicle':vehicle, 'next_stop':stop})
     return out_list
 
 def get_train_and_metro_data():
@@ -78,6 +81,9 @@ def request_trips(request):
     data = json.loads(request.body)
     origin = data.get("start_id")
     destination = data.get("end_id")
+
+    TripInfo.objects.get(user=current_user).delete()
+
     # API endpoint
     api_endpoint = "https://api.transport.nsw.gov.au/v1/tp/trip"
 
@@ -117,7 +123,14 @@ def request_trips(request):
         out_journey = {}
         out_journey["legs"] = []
         travel_time = 0
-
+        trip_info = TripInfo.objects.update_or_create(
+            user=current_user,
+            duration=out_journey['travel_time'],  # or your accumulated travel_time if better
+            start_time=None,
+            end_time=None,
+            start_station=None,
+            end_station=None
+        )
         for leg in journey['legs']:
             out_leg = {}
             transportation_method = leg['transportation']['product']['class']
@@ -154,7 +167,8 @@ def request_trips(request):
             start_coords = leg['origin']['coord']
             end_coords = leg['destination']['coord']
 
-            trip_leg = TripLeg.objects.create(
+            trip_leg = TripLeg.objects.update_or_create(
+                trip_info=trip_info,
                 train=train_obj,
                 start_latitude=float(start_coords[0]),
                 start_longitude=float(start_coords[1]),
@@ -165,11 +179,11 @@ def request_trips(request):
 
         if len(out_journey['legs']) == 0:
             continue
-        last_stop = journey['legs'][-1]['stopSequence'][-1]
+        last_stop = out_journey['legs'][-1]['stopSequence'][-1]
 
         arrival_time = last_stop.get('arrivalTimeEstimated', last_stop['arrivalTimePlanned'])
 
-        first_stop = journey['legs'][0]['stopSequence'][0]
+        first_stop = out_journey['legs'][0]['stopSequence'][0]
         departure_time = first_stop.get('departureTimeEstimated', first_stop['departureTimePlanned'])
 
 
@@ -177,9 +191,10 @@ def request_trips(request):
         out_journey["departure_time"] = departure_time
         out_journey["arrival_time"] = arrival_time
 
-        trip_info = TripInfo.objects.create(
+        trip_info = TripInfo.objects.update(
+            id=trip_info.id,
             user=current_user,
-            duration=out_journey['travel_time'],  # or your accumulated travel_time if better
+            duration=out_journey['travel_time'],
             start_time=parse_datetime(departure_time),
             end_time=parse_datetime(arrival_time),
             start_station=journey['legs'][0]['origin']['name'],
@@ -255,13 +270,9 @@ def retrieve_crowdsourcedata(request):
             carriage_number=carriage_number)
         return JsonResponse({"message": "CrowdSourcedData created"})
 
-@api_view(['GET'])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def request_locations(request):
+def location_helper():
     locs = dict()
     train_data = get_train_and_metro_data()
-    print(train_data)
     locs['train_info'] = train_data
     # Save each train into DB (create or update if exists)
     for train in train_data:
@@ -269,6 +280,7 @@ def request_locations(request):
         vehicle = train.get("vehicle")
         lat = train.get("latitude")
         lon = train.get("longitude")
+        next_stop = train.get("next_stop")
         if trip_id and lat is not None and lon is not None:
             Train.objects.update_or_create(
                 trip_id=trip_id,
@@ -276,6 +288,48 @@ def request_locations(request):
                     "vehicle": vehicle,
                     "current_latitude": float(lat),
                     "current_longitude": float(lon),
+                    "next_stop": next_stop
                 }
             )
-    return Response(locs)
+        TripLeg.objects.filter(train=train).filter(end_station=next_stop).update(last_stretch=True)
+            
+    return locs
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def request_locations(request):
+    return Response(location_helper())
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def choose_route(request):
+    current_user = request.user
+    data = json.loads(request.body)
+    num = data.get("chosen_num")
+    chosen_route_id = TripInfo.objects.get(user=current_user)[num].id
+    TripInfo.objects.exclude(id=chosen_route_id).delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def current_train(request):
+    request_locations()
+    current_user = request.user
+    trips = TripInfo.objects.get(user=current_user)
+    if len(trips) != 1:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    trip = trips[0]
+    if trip.starttime > timezone.now():
+        train = None
+        return Response(train)
+    for leg in TripLeg.objects.get(trip_info=trip):
+        if leg.last_stretch and leg.end_station != leg.train:
+            #we know we passed station so person got off
+            continue
+        return Response(leg.train)
+    #trip completed
+    return Response(status=status.HTTP_400_BAD_REQUEST)
+

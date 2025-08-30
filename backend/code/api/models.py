@@ -9,6 +9,7 @@ class Train(models.Model):
     vehicle = models.CharField(max_length=200) # metro or train
     current_latitude = models.FloatField()
     current_longitude = models.FloatField()
+    next_stop = models.CharField(max_length=200)
 
 
 class TripInfo(models.Model):
@@ -31,12 +32,16 @@ class TripInfo(models.Model):
 
 
 class TripLeg(models.Model):
+    trip_info = models.ForeignKey(TripInfo, on_delete=models.CASCADE)
     train = models.ForeignKey(Train, on_delete=models.CASCADE)
     start_latitude = models.FloatField()
     start_longitude = models.FloatField()
     end_latitude = models.FloatField()
     end_longitude = models.FloatField()
-    path = models.JSONField(default=list)  
+    start_station = models.CharField(max_length=200)
+    end_station = models.CharField(max_length=200)
+    path = models.JSONField(default=list)
+    last_stretch = models.BooleanField(default=False)
 
 class TripPoint(models.Model):
     id = models.AutoField(primary_key=True)
