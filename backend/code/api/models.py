@@ -32,12 +32,26 @@ class Train(models.Model):
 
 
 class CarbonFootprint(models.Model):
+    """
+    CarbonFootprint represents environmental data about a particular trip.
+
+    It links back to TripInfo through the foreign key, allowing the app to obtain information to
+    perform carbon emission calculations.
+    """
     trip = models.ForeignKey(TripInfo, on_delete=models.CASCADE, related_name='carbon_footprints')
     distance_km = models.DecimalField(max_digits=8, decimal_places=2)
     carbon_emissions_kg = models.DecimalField(max_digits=8, decimal_places=2)
 # need a hardcoded calculation for carbon emissions
 
-class CrowdsourcedData(models.Model):
+class CrowdSourcedData(models.Model):
+    """
+    CrowdSourcedData is data collected by users. It can include anything from complaints to comments
+    about their trip.
+
+    This model allows the app to store information inputted by users, particularly rating data.
+    This ranges from service disruptions, cleanliness of a particular carriage,
+    accessibility information, and of course if there is a transport officer on the train.
+    """
     trip = models.ForeignKey(TripInfo, on_delete=models.CASCADE, related_name='crowdsourced_data')
     comments = models.CharField(max_length=200) # includes train guard annoucements
     transport_officer = models.BooleanField(default=False) #lol
