@@ -164,7 +164,7 @@ def request_trips(request):
         out_journey["departure_time"] = departure_time
         out_journey["arrival_time"] = arrival_time
 
-        trip_info = TripInfo.objects.update_or_create(
+        trip_info = TripInfo.objects.get_or_create(
             id=trip_info.id,
             user=current_user,
             duration=out_journey['travel_time'],
