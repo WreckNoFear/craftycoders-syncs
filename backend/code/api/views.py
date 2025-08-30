@@ -1,15 +1,12 @@
 from TransportNSWv2 import TransportNSWv2
 
-from django.shortcuts import render
 from django.contrib.auth.models import User
-from django.contrib.auth import login, authenticate, logout
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.authtoken.models import Token
 import requests
 from google.transit import gtfs_realtime_pb2
 
-from rest_framework.views import APIView
 import json
 from nextstop.settings import API_KEY
 import requests
@@ -17,8 +14,13 @@ import time
 from datetime import datetime
 import json
 tnsw = TransportNSWv2()
-from .models import TripInfo, CarbonFootprint, CrowdSourcedData, Train, TripLeg, TripPoint
+from .models import TripInfo, CarbonFootprint, CrowdSourcedData, Train, TripLeg
 from django.utils.dateparse import parse_datetime
+
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 def index(request):
     return HttpResponse("Hello, world. You're at the api index.")
@@ -68,122 +70,125 @@ def get_train_and_metro_data():
     return out_list
 
 
-@csrf_exempt
+@api_view(["POST"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def request_trips(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        origin = data.get("start_id")
-        destination = data.get("end_id")
-        # API endpoint
-        api_endpoint = "https://api.transport.nsw.gov.au/v1/tp/trip"
+    current_user = request.user 
+    data = json.loads(request.body)
+    origin = data.get("start_id")
+    destination = data.get("end_id")
+    # API endpoint
+    api_endpoint = "https://api.transport.nsw.gov.au/v1/tp/trip"
 
-        # Input parameters for the search
-        when = time.time()
+    # Input parameters for the search
+    when = time.time()
 
-        # Build the request parameters
-        params = {
-            "outputFormat": "rapidJSON",
-            "coordOutputFormat": "EPSG:4326",
-            "depArrMacro": "dep",
-            "itdDate": datetime.fromtimestamp(when).strftime("%Y%m%d"),
-            "itdTime": datetime.fromtimestamp(when).strftime("%H%M"),
-            "type_origin": "stop",
-            "name_origin": origin,
-            "type_destination": "stop",
-            "name_destination": destination,
-            "TfNSWTR": "true"
-        }
+    # Build the request parameters
+    params = {
+        "outputFormat": "rapidJSON",
+        "coordOutputFormat": "EPSG:4326",
+        "depArrMacro": "dep",
+        "itdDate": datetime.fromtimestamp(when).strftime("%Y%m%d"),
+        "itdTime": datetime.fromtimestamp(when).strftime("%H%M"),
+        "type_origin": "stop",
+        "name_origin": origin,
+        "type_destination": "stop",
+        "name_destination": destination,
+        "TfNSWTR": "true"
+    }
 
-        # If you have an API key, include it in headers
-        headers = {
-            "Authorization": "apikey " + API_KEY
-        }
+    # If you have an API key, include it in headers
+    headers = {
+        "Authorization": "apikey " + API_KEY
+    }
 
-        response = requests.get(api_endpoint, params=params, headers=headers)
+    response = requests.get(api_endpoint, params=params, headers=headers)
 
-        # Parse the JSON response
+    # Parse the JSON response
 
 
-        info = response.json()
+    info = response.json()
 
-        out_dict = {}
-        out_dict["journeys"] = []
+    out_dict = {}
+    out_dict["journeys"] = []
 
-        for journey in info['journeys']:
-            out_journey = {}
-            out_journey["legs"] = []
-            travel_time = 0
+    for journey in info['journeys']:
+        out_journey = {}
+        out_journey["legs"] = []
+        travel_time = 0
 
-            for leg in journey['legs']:
-                out_leg = {}
-                transportation_method = leg['transportation']['product']['class']
-                if transportation_method == 2:
-                    out_leg['transport'] = "Metro"
-                elif transportation_method == 1:
-                    out_leg['transport'] = "Train"
-                else:
-                    continue
-                out_leg['trip_id'] = leg['transportation']['properties'].get('AVMSTripID', 'RealtimeTripId')
-                
-                coords = leg['origin']['coord']
-                out_leg['origin'] = {'latitude':coords[0], 'longitude':coords[1]}
-                
-                coords2 = leg['destination']['coord']
-                out_leg['destination'] = {'latitude':coords2[0], 'longitude':coords2[1]}
-                
-                travel_time += leg['duration']
-
-                path = [{'latitude':x[0],'longitude':x[1]} for x in leg['coords']]
-                out_leg['path'] = path
-                out_journey['legs'].append(out_leg)
-                
-                # Lookup or create the Train
-                trip_id = leg['transportation']['properties'].get('AVMSTripID', 'RealtimeTripId')
-                train_obj, _ = Train.objects.get_or_create(
-                    trip_id=trip_id,
-                    defaults={
-                        "vehicle": "Train" if transportation_method == 1 else "Metro",
-                        "current_latitude": leg['origin']['coord'][0],
-                        "current_longitude": leg['origin']['coord'][1]
-                    }
-                )
-                start_coords = leg['origin']['coord']
-                end_coords = leg['destination']['coord']
-
-                trip_leg = TripLeg.objects.create(
-                    train=train_obj,
-                    start_latitude=float(start_coords[0]),
-                    start_longitude=float(start_coords[1]),
-                    end_latitude=float(end_coords[0]),
-                    end_longitude=float(end_coords[1]),
-                    path = path
-                )
-
-            if len(out_journey['legs']) == 0:
+        for leg in journey['legs']:
+            out_leg = {}
+            transportation_method = leg['transportation']['product']['class']
+            if transportation_method == 2:
+                out_leg['transport'] = "Metro"
+            elif transportation_method == 1:
+                out_leg['transport'] = "Train"
+            else:
                 continue
-            last_stop = journey['legs'][-1]['stopSequence'][-1]
+            out_leg['trip_id'] = leg['transportation']['properties'].get('AVMSTripID', 'RealtimeTripId')
+            
+            coords = leg['origin']['coord']
+            out_leg['origin'] = {'latitude':coords[0], 'longitude':coords[1]}
+            
+            coords2 = leg['destination']['coord']
+            out_leg['destination'] = {'latitude':coords2[0], 'longitude':coords2[1]}
+            
+            travel_time += leg['duration']
 
-            arrival_time = last_stop.get('arrivalTimeEstimated', last_stop['arrivalTimePlanned'])
+            path = [{'latitude':x[0],'longitude':x[1]} for x in leg['coords']]
+            out_leg['path'] = path
+            out_journey['legs'].append(out_leg)
+            
+            # Lookup or create the Train
+            trip_id = leg['transportation']['properties'].get('AVMSTripID', 'RealtimeTripId')
+            train_obj, _ = Train.objects.get_or_create(
+                trip_id=trip_id,
+                defaults={
+                    "vehicle": "Train" if transportation_method == 1 else "Metro",
+                    "current_latitude": leg['origin']['coord'][0],
+                    "current_longitude": leg['origin']['coord'][1]
+                }
+            )
+            start_coords = leg['origin']['coord']
+            end_coords = leg['destination']['coord']
 
-            first_stop = journey['legs'][0]['stopSequence'][0]
-            departure_time = first_stop.get('departureTimeEstimated', first_stop['departureTimePlanned'])
-
-
-            out_journey["travel_time"] = travel_time
-            out_journey["departure_time"] = departure_time
-            out_journey["arrival_time"] = arrival_time
-
-            trip_info = TripInfo.objects.create(
-                duration=out_journey['travel_time'],  # or your accumulated travel_time if better
-                start_time=parse_datetime(departure_time),
-                end_time=parse_datetime(arrival_time),
-                start_station=journey['legs'][0]['origin']['name'],
-                end_station=journey['legs'][-1]['destination']['name']
+            trip_leg = TripLeg.objects.create(
+                train=train_obj,
+                start_latitude=float(start_coords[0]),
+                start_longitude=float(start_coords[1]),
+                end_latitude=float(end_coords[0]),
+                end_longitude=float(end_coords[1]),
+                path = path
             )
 
+        if len(out_journey['legs']) == 0:
+            continue
+        last_stop = journey['legs'][-1]['stopSequence'][-1]
 
-            out_dict["journeys"].append(out_journey)
-        return JsonResponse(out_dict)
+        arrival_time = last_stop.get('arrivalTimeEstimated', last_stop['arrivalTimePlanned'])
+
+        first_stop = journey['legs'][0]['stopSequence'][0]
+        departure_time = first_stop.get('departureTimeEstimated', first_stop['departureTimePlanned'])
+
+
+        out_journey["travel_time"] = travel_time
+        out_journey["departure_time"] = departure_time
+        out_journey["arrival_time"] = arrival_time
+
+        trip_info = TripInfo.objects.create(
+            user=current_user,
+            duration=out_journey['travel_time'],  # or your accumulated travel_time if better
+            start_time=parse_datetime(departure_time),
+            end_time=parse_datetime(arrival_time),
+            start_station=journey['legs'][0]['origin']['name'],
+            end_station=journey['legs'][-1]['destination']['name']
+        )
+
+
+        out_dict["journeys"].append(out_journey)
+    return Response(out_dict)
 
 @csrf_exempt
 def set_carbonfootprint(request):
@@ -250,27 +255,27 @@ def retrieve_crowdsourcedata(request):
             carriage_number=carriage_number)
         return JsonResponse({"message": "CrowdSourcedData created"})
 
-
-@csrf_exempt
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def request_locations(request):
-    if request.method == "GET":
-        locs = dict()
-        train_data = get_train_and_metro_data()
-        print(train_data)
-        locs['train_info'] = train_data
-        # Save each train into DB (create or update if exists)
-        for train in train_data:
-            trip_id = train.get("trip_id")
-            vehicle = train.get("vehicle")
-            lat = train.get("latitude")
-            lon = train.get("longitude")
-            if trip_id and lat is not None and lon is not None:
-                Train.objects.update_or_create(
-                    trip_id=trip_id,
-                    defaults={
-                        "vehicle": vehicle,
-                        "current_latitude": float(lat),
-                        "current_longitude": float(lon),
-                    }
-                )
-        return JsonResponse(locs)
+    locs = dict()
+    train_data = get_train_and_metro_data()
+    print(train_data)
+    locs['train_info'] = train_data
+    # Save each train into DB (create or update if exists)
+    for train in train_data:
+        trip_id = train.get("trip_id")
+        vehicle = train.get("vehicle")
+        lat = train.get("latitude")
+        lon = train.get("longitude")
+        if trip_id and lat is not None and lon is not None:
+            Train.objects.update_or_create(
+                trip_id=trip_id,
+                defaults={
+                    "vehicle": vehicle,
+                    "current_latitude": float(lat),
+                    "current_longitude": float(lon),
+                }
+            )
+    return Response(locs)

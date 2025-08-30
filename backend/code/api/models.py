@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.validators import MinLengthValidator
-
+from django.contrib.auth.models import User
 # Create your models here.
 
 
@@ -20,6 +20,7 @@ class TripInfo(models.Model):
     #     TRAIN = 'Train', 'Train'
     #     METRO = 'Metro', 'Metro'
     #     LIGHTRAIL = 'Light Rail', 'Light Rail'
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     duration = models.BigIntegerField()
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
