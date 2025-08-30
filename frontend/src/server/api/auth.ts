@@ -18,7 +18,7 @@ type LogInProps = { data: { username: string; password: string } };
 
 export async function logInUser({ data: values }: LogInProps) {
   try {
-    const data = await makeRequest(`/login`, "POST", values);
+    const data = await makeRequest(`/token-auth`, "POST", values);
 
     return data;
   } catch (error) {
