@@ -60,6 +60,30 @@ def CarbonFootprint(request):
         else:
             carbon_emissions_transport_kg = distance_km * 0.1   # Default value
         carbon_emissions_car_kg = distance_km * 0.17  # 0.17 kg CO2 per km for cars (diesel)
+        CarbonFootprint.objects.create(
+            trip=trip,
+            distance_km=distance_km,
+            carbon_emissions_transport_kg=carbon_emissions_transport_kg,
+            carbon_emissions_car_kg=carbon_emissions_car_kg
+        )
         return JsonResponse({"message": "Carbon footprint created"})
 
-        
+def CrowdSourcedData(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        trip = data.get("trip")
+        comments = data.get("comments")
+        transport_officer = data.get("transport_officer")
+        is_delay = data.get("is_delay")
+        cleanliness = data.get("cleanliness")
+        crowdedness = data.get("crowdedness")
+        carriage_number = data.get("carriage_number")
+        CrowdSourcedData.objects.create(
+            trip=trip, 
+            comments=comments, 
+            transport_officer=transport_officer, 
+            is_delay=is_delay, 
+            cleanliness=cleanliness, 
+            crowdedness=crowdedness, 
+            carriage_number=carriage_number)
+        return JsonResponse({"message": "CrowdSourcedData created"})
