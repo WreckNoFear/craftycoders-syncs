@@ -38,7 +38,7 @@ const Home = () => {
       id: "recent-trips",
       icon: <Clock style={styles.gridIcon} />,
       title: "Recent Trips",
-      route: "/(tabs)",
+      route: "/features/recent-trips",
     },
   ];
 
