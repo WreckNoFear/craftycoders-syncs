@@ -57,6 +57,6 @@ def request_trips(request):
         data = json.loads(request.body)
         start = data.get("start_id")
         end = data.get("end_id")
-        journey = tnsw.get_trip(start, end, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJITEEtenFmTklLaFphczA2OVl3dFF6T0NpSndsc0xxakdIYmhLNVdrWU9JIiwiaWF0IjoxNzU2NTI4NTQyfQ.hVUH4cyrgQq1aLnQ56ZeI_HX5rHmAZCiRP_FgYS__Ac', 5)
+        journey = tnsw.get_trip(start, end, '', 5)
         out = json.loads(journey)
         return JsonResponse(out)
