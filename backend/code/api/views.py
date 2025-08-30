@@ -123,14 +123,6 @@ def request_trips(request):
         out_journey = {}
         out_journey["legs"] = []
         travel_time = 0
-        trip_info = TripInfo.objects.update_or_create(
-            user=current_user,
-            duration=out_journey['travel_time'],  # or your accumulated travel_time if better
-            start_time=None,
-            end_time=None,
-            start_station=None,
-            end_station=None
-        )
         for leg in journey['legs']:
             out_leg = {}
             transportation_method = leg['transportation']['product']['class']
@@ -154,28 +146,9 @@ def request_trips(request):
             out_leg['path'] = path
             out_journey['legs'].append(out_leg)
             
-            # Lookup or create the Train
-            trip_id = leg['transportation']['properties'].get('AVMSTripID', 'RealtimeTripId')
-            train_obj, _ = Train.objects.get_or_create(
-                trip_id=trip_id,
-                defaults={
-                    "vehicle": "Train" if transportation_method == 1 else "Metro",
-                    "current_latitude": leg['origin']['coord'][0],
-                    "current_longitude": leg['origin']['coord'][1]
-                }
-            )
-            start_coords = leg['origin']['coord']
-            end_coords = leg['destination']['coord']
 
-            trip_leg = TripLeg.objects.update_or_create(
-                trip_info=trip_info,
-                train=train_obj,
-                start_latitude=float(start_coords[0]),
-                start_longitude=float(start_coords[1]),
-                end_latitude=float(end_coords[0]),
-                end_longitude=float(end_coords[1]),
-                path = path
-            )
+
+
 
         if len(out_journey['legs']) == 0:
             continue
@@ -200,6 +173,27 @@ def request_trips(request):
             start_station=journey['legs'][0]['origin']['name'],
             end_station=journey['legs'][-1]['destination']['name']
         )
+
+        for out_leg in out_journey['legs']:
+            # Lookup or create the Train
+            trip_id = out_leg['transportation']['properties'].get('AVMSTripID', 'RealtimeTripId')
+            train_obj, _ = Train.objects.get_or_create(
+                trip_id=trip_id,
+                defaults={
+                    "vehicle": "Train" if out_leg['transport'] == "Train" else "Metro",
+                    "current_latitude": out_leg['origin']['latitude'],
+                    "current_longitude": out_leg['origin']['longitude']
+                }
+            )
+            trip_leg = TripLeg.objects.update_or_create(
+                trip_info=trip_info,
+                train=train_obj,
+                start_latitude=float(out_leg['origin']['latitude']),
+                start_longitude=float(out_leg['origin']['longitude']),
+                end_latitude=float(out_leg['destination']['latitude']),
+                end_longitude=float(out_leg['destination']['longitude']),
+                path = out_leg['path']
+            )
 
 
         out_dict["journeys"].append(out_journey)
