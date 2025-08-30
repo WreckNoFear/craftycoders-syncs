@@ -28,3 +28,10 @@ class Train(models.Model):
     #id of some sort...
     latitude = models.CharField(max_length=200)
     longitude = models.CharField(max_length=200)
+
+
+class CarbonFootprint(models.Model):
+    trip = models.ForeignKey(TripInfo, on_delete=models.CASCADE, related_name='carbon_footprints')
+    distance_km = models.DecimalField(max_digits=8, decimal_places=2)
+    carbon_emissions_kg = models.DecimalField(max_digits=8, decimal_places=2)
+# need a hardcoded calculation for carbon emissions
