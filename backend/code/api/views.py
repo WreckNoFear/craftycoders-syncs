@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate, logout
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from api.serializers import TripInfoSerializer
+from rest_framework.views import APIView
 import json
 tnsw = TransportNSWv2()
 
