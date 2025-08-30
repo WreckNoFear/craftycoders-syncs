@@ -82,7 +82,7 @@ def request_trips(request):
     origin = data.get("start_id")
     destination = data.get("end_id")
 
-    TripInfo.objects.get(user=current_user).delete()
+    #TripInfo.objects.get(user=current_user).delete()
 
     # API endpoint
     api_endpoint = "https://api.transport.nsw.gov.au/v1/tp/trip"
