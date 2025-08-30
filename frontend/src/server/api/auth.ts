@@ -1,0 +1,28 @@
+import kdebug from "@/src/utils/kdebug";
+import makeRequest from "../make-request";
+
+type SignUpProps = { data: { username: string; firstName: string; password: string } };
+
+export async function signUpUser({ data: values }: SignUpProps) {
+  try {
+    const data = await makeRequest(`/register`, "POST", values);
+
+    return data.data;
+  } catch (error) {
+    kdebug("Request error: ", error);
+    return { error: (error as Error)?.message };
+  }
+}
+
+type LogInProps = { data: { username: string; password: string } };
+
+export async function logInUser({ data: values }: LogInProps) {
+  try {
+    const data = await makeRequest(`/login`, "POST", values);
+
+    return data.data;
+  } catch (error) {
+    kdebug("Request error: ", error);
+    return { error: (error as Error)?.message };
+  }
+}
