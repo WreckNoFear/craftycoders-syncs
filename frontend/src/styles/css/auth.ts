@@ -7,6 +7,9 @@ export const styles = StyleSheet.create({
     margin: 40,
     justifyContent: "center",
   },
+  logoWrapper: {
+    alignSelf: "center",
+  },
   title: {
     fontSize: 24,
     textAlign: "center",
@@ -40,6 +43,6 @@ export const styles = StyleSheet.create({
   smallLink: {
     textAlign: "center",
     marginVertical: 30,
-    color: Theme.COLORS.GREY,
+    color: Theme.COLORS.GRAY,
   },
 });

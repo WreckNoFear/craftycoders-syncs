@@ -1,5 +1,12 @@
 import { Tabs } from "expo-router";
-import { Home, Map, User } from "lucide-react-native";
+import {
+  Home,
+  Map,
+  Navigation,
+  Settings,
+  Star,
+  User,
+} from "lucide-react-native";
 
 export default function TabsLayout() {
   return (
@@ -27,15 +34,27 @@ export default function TabsLayout() {
         options={{
           title: "New Trip",
           headerShown: false,
-          tabBarIcon: ({ color, size }) => <Map color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => (
+            <Navigation color={color} size={size} />
+          ),
         }}
       />
       <Tabs.Screen
-        name="account"
+        name="saved-trips"
         options={{
-          title: "Account",
+          title: "Saved Trips",
           headerShown: false,
-          tabBarIcon: ({ color, size }) => <User color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <Star color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: "Settings",
+          headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <Settings color={color} size={size} />
+          ),
         }}
       />
     </Tabs>

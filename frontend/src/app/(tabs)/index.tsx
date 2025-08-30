@@ -1,40 +1,101 @@
-import { View, Text, StyleSheet } from "react-native";
-import { Image } from "expo-image";
-import { RectButton } from "react-native-gesture-handler";
-import { Theme } from "@/src/styles/theme";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import Logo from "@/src/components/logo";
+import { Clock, Leaf, Star, UserCircle } from "lucide-react-native";
+import { FlatList } from "react-native-gesture-handler";
+import { ReactElement } from "react";
 import Button from "@/src/components/button";
 
+type ButtonProps = {
+  id: string;
+  icon: ReactElement;
+  title: string;
+  route: string;
+};
+
 const Home = () => {
+  const items: ButtonProps[] = [
+    {
+      id: "sustainability-report",
+      icon: <Leaf style={styles.gridIcon} />,
+      title: "Sustainability Report",
+      route: "/(tabs)",
+    },
+    {
+      id: "saved-trips",
+      icon: <Star style={styles.gridIcon} />,
+      title: "Saved Trips",
+      route: "/(tabs)",
+    },
+    {
+      id: "social",
+      icon: <UserCircle style={styles.gridIcon} />,
+      title: "Social",
+      route: "/(tabs)",
+    },
+    {
+      id: "recent-trips",
+      icon: <Clock style={styles.gridIcon} />,
+      title: "Recent Trips",
+      route: "/(tabs)",
+    },
+  ];
+
   return (
-    <View style={styles.view}>
-      <Image
-        source={require("@/src/assets/images/logo.png")}
-        style={styles.logo}
+    <View style={styles.container}>
+      <Logo />
+
+      <FlatList
+        data={items}
+        renderItem={({ item }) => <BigButton item={item} />}
+        keyExtractor={(item) => item.id}
+        numColumns={2}
+        style={styles.gridContainer}
       />
-
-      <Text>Home</Text>
-
-      <Button>
-        <Text>Button goes here</Text>
-      </Button>
     </View>
   );
 };
 
 export default Home;
 
+const BigButton = ({ item }: { item: ButtonProps }) => {
+  return (
+    <View style={styles.gridItem}>
+      <TouchableOpacity>
+        {item.icon}
+        <Text style={styles.gridText}>{item.title}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
-  view: {
+  container: {
     flex: 1,
-    flexDirection: "column",
+    padding: 20,
+  },
+  gridContainer: {
+    flex: 1,
+    gap: 20,
+  },
+  gridItem: {
+    width: "46%",
+    height: 180,
+    margin: 8,
+    backgroundColor: "#e0e0e0",
+    borderRadius: 10,
+    flex: 1,
     alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
   },
-  logo: {
-    width: 200,
-    height: 200,
+  gridIcon: {
+    height: 100,
+    width: 100,
   },
-  button: {
-    backgroundColor: Theme.COLORS.PRIMARY,
-    padding: 100,
-  }
+  gridText: {
+    marginTop: 8,
+    textAlign: "center",
+    fontSize: 14,
+    fontWeight: "500",
+  },
 });
