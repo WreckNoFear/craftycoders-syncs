@@ -54,7 +54,7 @@ class CrowdSourcedData(models.Model):
 
     This model allows the app to store information inputted by users, particularly rating data.
     This ranges from service disruptions, cleanliness of a particular carriage,
-    accessibility information, and of course if there is a transport officer on the train.
+    accessibility information, and of course if there is a transport officer on the train. lol
     """
     trip = models.ForeignKey(TripInfo, on_delete=models.CASCADE, related_name='crowdsourced_data')
     comments = models.CharField(max_length=200) # includes train guard annoucements
