@@ -16,7 +16,7 @@ type SearchTripProps = { data: { start_id: string; end_id: string } };
 
 export async function getTripsByLocation({ data: values }: SearchTripProps) {
   try {
-    const data = await makeRequest("/trip-search", "POST", values);
+    const data = await makeRequest("/request-trips", "POST", values);
 
     return data;
   } catch (error) {

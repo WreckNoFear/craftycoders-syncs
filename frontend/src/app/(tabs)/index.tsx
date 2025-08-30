@@ -17,10 +17,10 @@ type ButtonProps = {
 const Home = () => {
   const items: ButtonProps[] = [
     {
-      id: "sustainability-report",
-      icon: <Leaf style={styles.gridIcon} />,
-      title: "Sustainability Report",
-      route: "/features/sustainability",
+      id: "recent-trips",
+      icon: <Clock style={styles.gridIcon} />,
+      title: "Recent Trips",
+      route: "/features/recent-trips",
     },
     {
       id: "saved-trips",
@@ -29,16 +29,10 @@ const Home = () => {
       route: "/(tabs)/saved-trips",
     },
     {
-      id: "social",
-      icon: <UserCircle style={styles.gridIcon} />,
-      title: "Social",
-      route: "/(tabs)",
-    },
-    {
-      id: "recent-trips",
-      icon: <Clock style={styles.gridIcon} />,
-      title: "Recent Trips",
-      route: "/features/recent-trips",
+      id: "sustainability-report",
+      icon: <Leaf style={styles.gridIcon} />,
+      title: "Sustainability Report",
+      route: "/features/sustainability",
     },
   ];
 
@@ -46,7 +40,11 @@ const Home = () => {
     <View style={styles.container}>
       <View style={styles.containerHeader}>
         <Logo />
-        <TouchableOpacity style={styles.profileButton} activeOpacity={0.7}>
+        <TouchableOpacity
+          style={styles.profileButton}
+          activeOpacity={0.7}
+          onPress={() => router.push("/(tabs)/user-profile")}
+        >
           <UserCircle />
           <Text>Profile</Text>
         </TouchableOpacity>

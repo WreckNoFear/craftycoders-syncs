@@ -1,13 +1,6 @@
 import { Theme } from "@/src/styles/theme";
 import { Tabs } from "expo-router";
-import {
-  Home,
-  Map,
-  Navigation,
-  Settings,
-  Star,
-  User,
-} from "lucide-react-native";
+import { Home, Navigation, Star, User } from "lucide-react-native";
 
 export default function TabsLayout() {
   return (
@@ -65,12 +58,12 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="settings"
+        name="user-profile"
         options={{
-          title: "Settings",
+          title: "Profile",
           headerShown: false,
           tabBarIcon: ({ size, focused }) => (
-            <Settings
+            <User
               color={focused ? Theme.COLORS.PRIMARY : Theme.COLORS.GRAY}
               size={size}
             />
