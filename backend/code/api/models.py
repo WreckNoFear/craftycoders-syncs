@@ -4,8 +4,8 @@ from django.core.validators import MinLengthValidator
 # Create your models here.
 
 class TripInfo(models.Model):
-    """Trip info
-
+    """
+    TripInfo represents data retrieved by the TransportNSW API.
     """
     due = models.IntegerField()
     origin_stop_id = models.CharField(max_length=200)
@@ -42,7 +42,10 @@ class CarbonFootprint(models.Model):
     trip = models.ForeignKey(TripInfo, on_delete=models.CASCADE, related_name='carbon_footprints')
     distance_km = models.DecimalField(max_digits=8, decimal_places=2)
     carbon_emissions_kg = models.DecimalField(max_digits=8, decimal_places=2)
-# need a hardcoded calculation for carbon emissions
+    # Need a hardcoded calculation for carbon emissions for simplicity
+    #   0g per km for metro
+    #   40g per km for rail
+    #   170g per km for diesel car
 
 class CrowdSourcedData(models.Model):
     """
