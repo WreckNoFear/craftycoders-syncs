@@ -21,6 +21,7 @@ import {
 import { styles } from "@/src/styles/css/trip";
 import { getNearestStation } from "@/src/helpers/nearest-station";
 import TransportIcon from "@/src/components/transport-icon";
+import { Navigation } from "lucide-react-native";
 
 type Point = { latitude: number; longitude: number };
 
@@ -155,6 +156,31 @@ const Trip = () => {
     moveToLocation();
   }, [selected]);
 
+  const handleReturnToLocation = async () => {
+    try {
+      const location = await Location.getCurrentPositionAsync();
+      const { longitude, latitude } = location.coords;
+
+      if (mapRef.current) {
+        mapRef.current.animateToRegion(
+          {
+            latitude: latitude,
+            longitude: longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          },
+          500
+        );
+      }
+    } catch (error) {
+      console.error("Failed to return to current location: ", error);
+      Toast.show({
+        type: "error",
+        text1: "Failed to return to current location.",
+      });
+    }
+  };
+
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <View style={styles.innerContainer}>
@@ -186,6 +212,13 @@ const Trip = () => {
 
           {selected && (
             <>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={handleReturnToLocation}
+                style={styles.returnToLocation}
+              >
+                <Navigation />
+              </TouchableOpacity>
               <View style={styles.selectedView}>
                 <ResultItem item={selected} />
               </View>
