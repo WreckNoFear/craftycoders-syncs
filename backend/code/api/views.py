@@ -78,9 +78,9 @@ def set_carbonfootprint(request):
         trip_id = data.get("trip")
 
         try:
-            trip = TripInfo.objects.get(id=trip_id)
-            transport_type = trip.get("origin_transport_type")
-            distance_km = trip_id.get("distance_km")
+            trip = TripInfo.objects.get(real_time_trip_id=trip_id)
+            transport_type = trip.origin_transport_type
+            distance_km = data.get("distance_km")
         except TripInfo.DoesNotExist:
             return JsonResponse({"error": "TripInfo not found for carbon footprint"}, status=404)
 
@@ -119,7 +119,11 @@ def set_carbonfootprint(request):
 def CrowdSourcedData(request):
     if request.method == "POST":
         data = json.loads(request.body)
-        trip = data.get("trip")
+        trip_id = data.get("trip")
+        try:
+            trip = TripInfo.objects.get(real_time_trip_id=trip_id)  # Use real_time_trip_id
+        except TripInfo.DoesNotExist:
+            return JsonResponse({"error": "Trip not found"}, status=404)
         comments = data.get("comments")
         transport_officer = data.get("transport_officer")
         is_delay = data.get("is_delay")
