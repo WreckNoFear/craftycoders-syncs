@@ -2,7 +2,7 @@ from django.db import models
 
 # Create your models here.
 
-class DeviceData(models.Model):
+class TripInfo(models.Model):
     """Trip info
 
     """
@@ -21,5 +21,9 @@ class DeviceData(models.Model):
     occupancy = models.CharField(max_length=200)
     id = models.UUIDField()
     real_time_trip_id = models.CharField(max_length=200, primary_key=True)
+    latitude = models.CharField(max_length=200)
+    longitude = models.CharField(max_length=200)
+
+class Train(models.Model):
     latitude = models.CharField(max_length=200)
     longitude = models.CharField(max_length=200)
