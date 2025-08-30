@@ -95,7 +95,7 @@ def set_carbonfootprint(request):
             carbon_emissions_transport_kg = distance_km * 0.1   # Default value
     
         carbon_emissions_car_kg = distance_km * 0.17  # 0.17 kg CO2 per km for cars (diesel)
-        carbon_emissions_saved_kg= carbon_emissions_car_kg - carbon_emissions_transport_kg
+        carbon_emissions_saved_kg = carbon_emissions_car_kg - carbon_emissions_transport_kg
         cf, created = CarbonFootprint.objects.get_or_create(trip=trip)
         cf.distance_km = distance_km # could be changed so that we automatically calulate - alex
         cf.carbon_emissions_saved_kg = carbon_emissions_saved_kg
@@ -115,7 +115,7 @@ def set_carbonfootprint(request):
 #         return JsonResponse({"message": "Carbon footprint created"})
 # >>>>>>> fac9e1f4d7fcd6ec8ece2ce11ec07fe75a330c52
 
-
+@csrf_exempt 
 def CrowdSourcedData(request):
     if request.method == "POST":
         data = json.loads(request.body)
