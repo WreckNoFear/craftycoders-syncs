@@ -7,6 +7,7 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
 import json
+from nextstop.settings import API_KEY
 tnsw = TransportNSWv2()
 
 
@@ -57,6 +58,6 @@ def request_trips(request):
         data = json.loads(request.body)
         start = data.get("start_id")
         end = data.get("end_id")
-        journey = tnsw.get_trip(start, end, '', 5)
+        journey = tnsw.get_trip(start, end, API_KEY, 5)
         out = json.loads(journey)
         return JsonResponse(out)
