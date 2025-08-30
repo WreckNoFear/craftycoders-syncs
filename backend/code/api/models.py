@@ -19,11 +19,12 @@ class TripInfo(models.Model):
     origin_line_name_short = models.CharField(max_length=200)
     changes = models.IntegerField()
     occupancy = models.CharField(max_length=200)
-    id = models.UUIDField()
     real_time_trip_id = models.CharField(max_length=200, primary_key=True)
     latitude = models.CharField(max_length=200)
     longitude = models.CharField(max_length=200)
 
 class Train(models.Model):
+    #prolly should put more here idk
+    #id of some sort...
     latitude = models.CharField(max_length=200)
     longitude = models.CharField(max_length=200)

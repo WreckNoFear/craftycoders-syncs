@@ -1,9 +1,14 @@
+from TransportNSWv2 import TransportNSWv2
+
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate, logout
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from api.serializers import TripInfoSerializer
 import json
+tnsw = TransportNSWv2()
+
 
 def index(request):
     return HttpResponse("Hello, world. You're at the api index.")
@@ -45,3 +50,13 @@ def logout_user(request):
     if request.method == "POST":
         logout(request)
         return JsonResponse({"message": "Logged out"})
+
+@csrf_exempt
+def request_trips(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        start = data.get("start_id")
+        end = data.get("end_id")
+        journey = tnsw.get_trip(start, end, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJITEEtenFmTklLaFphczA2OVl3dFF6T0NpSndsc0xxakdIYmhLNVdrWU9JIiwiaWF0IjoxNzU2NTI4NTQyfQ.hVUH4cyrgQq1aLnQ56ZeI_HX5rHmAZCiRP_FgYS__Ac', 5)
+        out = json.loads(journey)
+        return JsonResponse(out)
