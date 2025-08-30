@@ -3,6 +3,14 @@ from django.core.validators import MinLengthValidator
 
 # Create your models here.
 
+
+class Train(models.Model):
+    trip_id = models.CharField(max_length=200, primary_key=True)
+    vehicle = models.CharField(max_length=200) # metro or train
+    current_latitude = models.FloatField()
+    current_longitude = models.FloatField()
+
+
 class TripInfo(models.Model):
     """
     TripInfo represents data retrieved by the TransportNSW API.
@@ -12,30 +20,30 @@ class TripInfo(models.Model):
     #     TRAIN = 'Train', 'Train'
     #     METRO = 'Metro', 'Metro'
     #     LIGHTRAIL = 'Light Rail', 'Light Rail'
+    duration = models.BigIntegerField()
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    start_station = models.CharField(max_length=200)
+    end_station = models.CharField(max_length=200)
 
-    due = models.IntegerField()
-    origin_stop_id = models.CharField(max_length=200)
-    origin_name = models.CharField(max_length=200)
-    departure_time = models.DateTimeField()
-    destination_stop_id = models.CharField(max_length=200)
-    destination_name = models.CharField(max_length=200)
-    arrival_time = models.DateTimeField()
-    origin_transport_type = models.CharField(max_length=200)
-    origin_transport_name = models.CharField(max_length=200)
-    origin_line_name = models.CharField(max_length=200)
-    origin_line_name_short = models.CharField(max_length=200)
-    changes = models.IntegerField()
-    occupancy = models.CharField(max_length=200)
-    real_time_trip_id = models.CharField(max_length=200, primary_key=True)
-    latitude = models.CharField(max_length=200)
-    longitude = models.CharField(max_length=200)
 
-class Train(models.Model):
-    #prolly should put more here idk
-    #id of some sort...
-    # NOTE: CHANGED FROM CHARFIELD TO DECIMALFIELD FOR LONGITUDE AND LATITUDE. 
-    latitude = models.DecimalField(max_digits=6, decimal_places=4)
-    longitude = models.DecimalField(max_digits=6, decimal_places=4)
+
+
+class TripLeg(models.Model):
+    train = models.ForeignKey(Train, on_delete=models.CASCADE)
+    start_latitude = models.FloatField()
+    start_longitude = models.FloatField()
+    end_latitude = models.FloatField()
+    end_longitude = models.FloatField()
+    path = models.JSONField(default=list)  
+
+class TripPoint(models.Model):
+    id = models.AutoField(primary_key=True)
+    num = models.BigIntegerField()
+    trip_leg = models.ForeignKey(TripLeg, on_delete=models.CASCADE)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+
 
 
 class CarbonFootprint(models.Model):
