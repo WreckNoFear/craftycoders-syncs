@@ -39,7 +39,9 @@ export default function SignUp() {
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
-      await signUpUser({ data });
+      const { error } = await signUpUser({ data });
+
+      if (error) throw error;
 
       Toast.show({
         type: "success",
@@ -58,7 +60,9 @@ export default function SignUp() {
 
   return (
     <View style={styles.container}>
-      <Logo />
+      <View style={styles.logoWrapper}>
+        <Logo />
+      </View>
 
       <Text style={styles.title}>Sign Up</Text>
 
@@ -134,7 +138,7 @@ export default function SignUp() {
       </View>
 
       <Link href="/(auth)/login" style={styles.smallLink}>
-        or Log In
+        Already have an account? Log In
       </Link>
     </View>
   );

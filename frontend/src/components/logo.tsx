@@ -14,6 +14,5 @@ const styles = StyleSheet.create({
   logo: {
     width: 85,
     height: 85,
-    alignSelf: "center",
   },
 });
