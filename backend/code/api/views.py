@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 import json
 from nextstop.settings import API_KEY
 tnsw = TransportNSWv2()
+from .models import TripInfo, CarbonFootprint, CrowdSourcedData
 
 
 def index(request):
@@ -47,19 +48,42 @@ def request_trips(request):
         return JsonResponse(out)
 
 @csrf_exempt
-def CarbonFootprint(request):
+def set_carbonfootprint(request):
+    """
+    Method calculates and sets the CarbonFootprint entity for a 
+    particular trip based on distance and transport type.
+    """
     if request.method == "POST":
         data = json.loads(request.body)
-        trip = data.get("trip")
-        transport_type = data.get("trip.origin_transport_type")
-        distance_km = data.get("distance_km")
-        if transport_type == "train":
+        carbonfootprint_id = data.get("trip")
+
+        try:
+            trip = TripInfo.objects.get(id=carbonfootprint_id)
+            transport_type = trip.get("origin_transport_type")
+            distance_km = carbonfootprint_id.get("distance_km")
+        except TripInfo.DoesNotExist:
+            return JsonResponse({"error": "TripInfo not found for carbon footprint"}, status=404)
+
+        # Get emissions savings by comparing public transport to car
+        # We hard coded values for now
+        # Can be expanded later on to include other transport types and conditions to improve accuracy
+        if transport_type == "Train":
             carbon_emissions_transport_kg = distance_km * 0.04  # 0.04 kg CO2 per km for trains
-        elif transport_type == "metro":
+        elif transport_type == "Metro":
             carbon_emissions_transport_kg = distance_km * 0.00  # 0.00 kg CO2 per km for metro
         else:
             carbon_emissions_transport_kg = distance_km * 0.1   # Default value
         carbon_emissions_car_kg = distance_km * 0.17  # 0.17 kg CO2 per km for cars (diesel)
-        return JsonResponse({"message": "Carbon footprint created"})
+
+        carbon_emissions_saved_kg= carbon_emissions_car_kg - carbon_emissions_transport_kg
+
+        cf, created = CarbonFootprint.objects.get_or_create(trip=trip)
+        cf.carbon_emissions_saved_kg = carbon_emissions_saved_kg
+        cf.save()
+
+        return JsonResponse({
+            "message": "Carbon footprint successfully updated.",
+            "carbon_emissions_saved_kg": carbon_emissions_saved_kg,
+            })
 
         
