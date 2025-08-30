@@ -11,10 +11,17 @@ NextStop, the next stop to sustainability. Building a forward-thinking culture f
 
 
 ## 👤 Participants
-| **Team Member** 	| **Role** 	|
-|-----------------	|----------	|
-| Adam            	| Frontend 	|
-| Alex            	| Backend  	|
-| Anthony         	| Backend  	|
-| Luka            	| Frontend 	|
-| Sven            	| Backend  	|
+| **Team Member** 	| **Contribution**      |
+|-----------------	|----------------------	|
+| Adam Schon      	| Frontend             	|
+| Alexander Tram  	| Backend              	|
+| Anthony Nguyen  	| Backend              	|
+| Luka Pustahija  	| Frontend + UI Design 	|
+| Sven Willet     	| Backend              	|
+
+## 🖥 Technology Stack
+* Django
+* Python Packages
+  * ...
+* Expo
+  * React Native
