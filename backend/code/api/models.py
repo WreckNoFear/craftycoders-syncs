@@ -47,7 +47,8 @@ class CarbonFootprint(models.Model):
     """
     trip = models.ForeignKey(TripInfo, on_delete=models.CASCADE, related_name='carbon_footprints')
     distance_km = models.DecimalField(max_digits=8, decimal_places=2)
-    carbon_emissions_kg = models.DecimalField(max_digits=8, decimal_places=2)
+    carbon_emissions_transport_kg = models.DecimalField(max_digits=8, decimal_places=2)
+    carbon_emissions_car_kg = models.DecimalField(max_digits=8, decimal_places=2)
     # Need a hardcoded calculation for carbon emissions for simplicity
     #   0g per km for metro
     #   40g per km for rail
@@ -60,7 +61,7 @@ class CrowdSourcedData(models.Model):
 
     This model allows the app to store information inputted by users, particularly rating data.
     This ranges from service disruptions, cleanliness of a particular carriage,
-    accessibility information, and of course if there is a transport officer on the train.
+    accessibility information, and of course if there is a transport officer on the train. lol
     """
     trip = models.ForeignKey(TripInfo, on_delete=models.CASCADE, related_name='crowdsourced_data')
     comments = models.CharField(max_length=200) # includes train guard annoucements
