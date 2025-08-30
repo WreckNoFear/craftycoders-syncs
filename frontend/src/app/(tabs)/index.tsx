@@ -1,9 +1,11 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import Logo from "@/src/components/logo";
-import { Clock, Leaf, Star, UserCircle } from "lucide-react-native";
+import { Clock, Leaf, Search, Star, UserCircle } from "lucide-react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { ReactElement } from "react";
 import Button from "@/src/components/button";
+import { Theme } from "@/src/styles/theme";
+import ProfileIcon from "@/src/components/profileicon";
 
 type ButtonProps = {
   id: string;
@@ -44,6 +46,11 @@ const Home = () => {
     <View style={styles.container}>
       <Logo />
 
+
+      <Button style={styles.whereButton}>
+        <Text style={styles.whereButtonText}>Where to next?</Text>
+      </Button>
+
       <FlatList
         data={items}
         renderItem={({ item }) => <BigButton item={item} />}
@@ -59,14 +66,15 @@ export default Home;
 
 const BigButton = ({ item }: { item: ButtonProps }) => {
   return (
-    <View style={styles.gridItem}>
-      <TouchableOpacity>
-        {item.icon}
-        <Text style={styles.gridText}>{item.title}</Text>
-      </TouchableOpacity>
-    </View>
+    <TouchableOpacity style={styles.gridItem} activeOpacity={0.7}>
+      {item.icon}
+      <Text style={styles.gridText}>{item.title}</Text>
+    </TouchableOpacity>
   );
 };
+
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -91,11 +99,20 @@ const styles = StyleSheet.create({
   gridIcon: {
     height: 100,
     width: 100,
+    alignSelf: "center",
   },
   gridText: {
     marginTop: 8,
     textAlign: "center",
     fontSize: 14,
     fontWeight: "500",
+  },
+  whereButton: {
+    width: "100%",
+    display: "flex",
+    marginVertical: 20,
+  },
+  whereButtonText: {
+    fontFamily: Theme.FONT.MEDIUM,
   },
 });

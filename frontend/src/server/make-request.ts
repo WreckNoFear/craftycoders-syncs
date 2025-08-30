@@ -12,7 +12,7 @@ export default async function makeRequest(url: string, method: RequestInit['meth
       requestOptions.body = JSON.stringify(body);
     }
 
-    const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL!}/api/${url}`, requestOptions);
+    const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL!}/api${url}/`, requestOptions);
   
     if (!response.ok) {
       const res = await response.json();

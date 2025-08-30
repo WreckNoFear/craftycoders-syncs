@@ -1,7 +1,7 @@
 import kdebug from "@/src/utils/kdebug";
 import makeRequest from "../make-request";
 
-type SignUpProps = { data: { username: string; firstName: string; password: string } };
+type SignUpProps = { data: { username: string; first_name: string; password: string } };
 
 export async function signUpUser({ data: values }: SignUpProps) {
   try {

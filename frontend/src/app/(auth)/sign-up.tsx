@@ -14,7 +14,7 @@ const formSchema = z.object({
   username: z.string().min(1, {
     message: "Username is required",
   }),
-  firstName: z.string().min(1, {
+  first_name: z.string().min(1, {
     message: "First name is required",
   }),
   password: z
@@ -32,7 +32,7 @@ export default function SignUp() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       username: "",
-      firstName: "",
+      first_name: "",
       password: "",
     },
   });
@@ -92,7 +92,7 @@ export default function SignUp() {
           <Text style={styles.label}>First Name</Text>
           <Controller
             control={form.control}
-            name="firstName"
+            name="first_name"
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
                 style={styles.input}
@@ -103,9 +103,9 @@ export default function SignUp() {
               />
             )}
           />
-          {formState.errors.firstName && (
+          {formState.errors.first_name && (
             <Text style={styles.error}>
-              {formState.errors.firstName?.message}
+              {formState.errors.first_name?.message}
             </Text>
           )}
         </View>

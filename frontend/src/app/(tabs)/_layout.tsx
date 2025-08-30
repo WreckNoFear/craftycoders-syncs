@@ -1,3 +1,4 @@
+import { Theme } from "@/src/styles/theme";
 import { Tabs } from "expo-router";
 import {
   Home,
@@ -26,7 +27,13 @@ export default function TabsLayout() {
         options={{
           title: "Home",
           headerShown: false,
-          tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
+          tabBarIcon: ({ size, focused }) => (
+            <Home
+              color={focused ? Theme.COLORS.PRIMARY : Theme.COLORS.GRAY}
+              size={size}
+            />
+          ),
+          tabBarActiveTintColor: Theme.COLORS.PRIMARY,
         }}
       />
       <Tabs.Screen
@@ -34,9 +41,13 @@ export default function TabsLayout() {
         options={{
           title: "New Trip",
           headerShown: false,
-          tabBarIcon: ({ color, size }) => (
-            <Navigation color={color} size={size} />
+          tabBarIcon: ({ size, focused }) => (
+            <Navigation
+              color={focused ? Theme.COLORS.PRIMARY : Theme.COLORS.GRAY}
+              size={size}
+            />
           ),
+          tabBarActiveTintColor: Theme.COLORS.PRIMARY,
         }}
       />
       <Tabs.Screen
@@ -44,7 +55,13 @@ export default function TabsLayout() {
         options={{
           title: "Saved Trips",
           headerShown: false,
-          tabBarIcon: ({ color, size }) => <Star color={color} size={size} />,
+          tabBarIcon: ({ size, focused }) => (
+            <Star
+              color={focused ? Theme.COLORS.PRIMARY : Theme.COLORS.GRAY}
+              size={size}
+            />
+          ),
+          tabBarActiveTintColor: Theme.COLORS.PRIMARY,
         }}
       />
       <Tabs.Screen
@@ -52,9 +69,13 @@ export default function TabsLayout() {
         options={{
           title: "Settings",
           headerShown: false,
-          tabBarIcon: ({ color, size }) => (
-            <Settings color={color} size={size} />
+          tabBarIcon: ({ size, focused }) => (
+            <Settings
+              color={focused ? Theme.COLORS.PRIMARY : Theme.COLORS.GRAY}
+              size={size}
+            />
           ),
+          tabBarActiveTintColor: Theme.COLORS.PRIMARY,
         }}
       />
     </Tabs>
