@@ -175,7 +175,7 @@ def request_trips(request):
 
         for out_leg in out_journey['legs']:
             # Lookup or create the Train
-            trip_id = out_leg['transportation']['properties'].get('AVMSTripID', 'RealtimeTripId')
+            trip_id = out_leg['trip_id']
             train_obj, _ = Train.objects.get_or_create(
                 trip_id=trip_id,
                 defaults={
