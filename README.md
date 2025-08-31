@@ -12,7 +12,7 @@ NextStop, the next stop to sustainability. Building a forward-thinking culture f
 ## Inspiration
 Existing apps like TripView focus mainly on timetables but fail to foster community or sustainability. With the hackathon theme "Cities of the Future," we set out to design a platform that not only makes commuting easier but also encourages eco-friendly choices. By gamifying carbon footprint reduction and enabling friends to travel together, NextStop transforms public transport into a social, sustainable, and rewarding experience.
 ## What it does
-NextStop empowers commuters with real-time, crowdsourced updates from fellow passengers—covering seat availability, carriage cleanliness, and even ticket inspections. Beyond reliable travel info, it connects friends so they can coordinate journeys, track their collective environmental impact, and stay motivated to make greener choices every day.
+NextStop empowers commuters with real-time, crowdsourced updates from fellow passengers—covering seat availability, carriage cleanliness, and even ticket inspections. Beyond reliable travel info and into the social aspect, it connects friends so they can coordinate journeys. Finally, for the environmental aspect the app tracks user's historical carbon emissions over a period of time and allow users to view this data on a graphed timeline, helping users stay motivated to make greener choices every day and develop sustainable habits.
 ## How we built it
 - Django for backend infrastructure
 - Python packages for data handling and APIs
@@ -31,6 +31,8 @@ NextStop empowers commuters with real-time, crowdsourced updates from fellow pas
 ## What's next for NextStop
 - Scaling the app to include more transport modes (buses, ferries, etc.)
 - Growing the community aspect so commuting feels social, connected, and fun
+- Including more gamifaction by adding a leaderboard
+- Allowing friends to see each other's emissions savings and compare
 
 ## 👤 Participants
 | **Team Member** 	| **Contribution**      |
@@ -43,7 +45,5 @@ NextStop empowers commuters with real-time, crowdsourced updates from fellow pas
 
 ## 🖥 Technology Stack
 * Django
-* Python Packages
-  * ...
 * Expo
   * React Native
