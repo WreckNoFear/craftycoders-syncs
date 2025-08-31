@@ -52,18 +52,23 @@ class TripPoint(models.Model):
 
 
 
-class CarbonFootprint(models.Model):
+class TripFootprint(models.Model):
     """
-    CarbonFootprint represents environmental data about a particular trip.
+    TripFootprint represents environmental data about a particular trip.
 
     It links back to TripInfo through the foreign key, allowing the app to obtain information to
     perform carbon emission calculations.
     """
     # trip = models.ForeignKey(TripInfo, on_delete=models.CASCADE, related_name='carbon_footprints')
     trip = models.OneToOneField(TripInfo, on_delete=models.CASCADE, primary_key=True)
-    distance_km = models.FloatField(default=0.0)
     carbon_emissions_saved_kg = models.FloatField(default=0.0)
 
+class CarbonFootprint(models.Model):
+    """
+    CarbonFootprint represents total emissions saved
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    total_saved = models.FloatField(default=0.0)
 
 class CrowdSourcedData(models.Model):
     """

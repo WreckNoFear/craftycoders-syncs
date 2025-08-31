@@ -23,6 +23,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils import timezone
+from haversine import haversine
 
 def index(request):
     return HttpResponse("Hello, world. You're at the api index.")
@@ -198,44 +199,62 @@ def request_trips(request):
         out_dict["journeys"].append(out_journey)
     return Response(out_dict)
 
-@csrf_exempt
-def set_carbonfootprint(request):
-    """
-    Method calculates and sets the CarbonFootprint entity for a 
-    particular trip based on distance and transport type.
-    """
-    if request.method == "POST":
-        data = json.loads(request.body)
-        trip_id = data.get("trip")
+# @csrf_exempt
+# def set_carbonfootprint(request):
+#     """
+#     Method calculates and sets the CarbonFootprint entity for a 
+#     particular trip based on distance and transport type.
+#     """
+#     if request.method == "POST":
+#         data = json.loads(request.body)
+#         trip_id = data.get("trip")
 
-        try:
-            trip = TripInfo.objects.get(real_time_trip_id=trip_id)
-            transport_type = trip.origin_transport_type
-            distance_km = data.get("distance_km")
-        except TripInfo.DoesNotExist:
-            return JsonResponse({"error": "TripInfo not found for carbon footprint"}, status=404)
+#         try:
+#             trip = TripInfo.objects.get(real_time_trip_id=trip_id)
+#             transport_type = trip.origin_transport_type
+#             distance_km = data.get("distance_km")
+#         except TripInfo.DoesNotExist:
+#             return JsonResponse({"error": "TripInfo not found for carbon footprint"}, status=404)
 
-        # Get emissions savings by getting difference between public transport to car
-        # We hard coded values for now
-        # Can be expanded later on to include other transport types and conditions to improve accuracy
-        if transport_type == "Train":
-            carbon_emissions_transport_kg = distance_km * 0.04  # 0.04 kg CO2 per km for trains
-        elif transport_type == "Metro":
-            carbon_emissions_transport_kg = distance_km * 0.00  # 0.00 kg CO2 per km for metro
-        else:
-            carbon_emissions_transport_kg = distance_km * 0.1   # Default value
+#         # Get emissions savings by getting difference between public transport to car
+#         # We hard coded values for now
+#         # Can be expanded later on to include other transport types and conditions to improve accuracy
+#         if transport_type == "Train":
+#             carbon_emissions_transport_kg = distance_km * 0.04  # 0.04 kg CO2 per km for trains
+#         elif transport_type == "Metro":
+#             carbon_emissions_transport_kg = distance_km * 0.00  # 0.00 kg CO2 per km for metro
+#         else:
+#             carbon_emissions_transport_kg = distance_km * 0.1   # Default value
     
-        carbon_emissions_car_kg = distance_km * 0.17  # 0.17 kg CO2 per km for cars (diesel)
-        carbon_emissions_saved_kg = carbon_emissions_car_kg - carbon_emissions_transport_kg
-        cf, created = CarbonFootprint.objects.get_or_create(trip=trip)
-        cf.distance_km = distance_km # could be changed so that we automatically calulate - alex
-        cf.carbon_emissions_saved_kg = carbon_emissions_saved_kg
-        cf.save()
+#         carbon_emissions_car_kg = distance_km * 0.17  # 0.17 kg CO2 per km for cars (diesel)
+#         carbon_emissions_saved_kg = carbon_emissions_car_kg - carbon_emissions_transport_kg
+#         # cf = CarbonFootprint.objects.update_or_create(
+#         #     trip=trip,
+#         #     distance_km=distance_km,
+#         #     ud = ud
+#         #     carbon_emissions_saved_kg =carbon_emissions_saved_kg
+#         #     )
+#         # cf.distance_km = distance_km # could be changed so that we automatically calulate - alex
+#         # cf.carbon_emissions_saved_kg = carbon_emissions_saved_kg
+#         # cf.save()
 
-        return JsonResponse({
-            "message": "Carbon footprint successfully updated.",
-            "carbon_emissions_saved_kg": carbon_emissions_saved_kg,
-            })
+#         return JsonResponse({
+#             "message": "Carbon footprint successfully updated.",
+#             "carbon_emissions_saved_kg": carbon_emissions_saved_kg,
+#             })
+
+def calculate_trip_emission_savings(trip):
+    distance = 0
+    for leg in TripLeg.objects.get(user=trip.user,trip=trip):
+        coords = [(p["latitude"], p["longitude"]) for p in leg["path"]]
+        if prev_coord is None:
+            prev_coord = coords[0]
+            coords = coords[1:]
+        for coord in coords:
+            distance += haversine(prev_coord, coord)
+            
+    # distance = 
+    
 
 
 @csrf_exempt 
@@ -285,7 +304,6 @@ def location_helper():
                 }
             )
         TripLeg.objects.filter(train=train).filter(end_station=next_stop).update(last_stretch=True)
-            
     return locs
 
 @api_view(['GET'])
@@ -302,7 +320,8 @@ def choose_route(request):
     data = json.loads(request.body)
     num = data.get("chosen_num")
     print(num)
-    chosen_route_id = TripInfo.objects.filter(user=current_user)[num].id
+    print(len(TripInfo.objects.filter(user=current_user)))
+    chosen_route_id = TripInfo.objects.filter(user=current_user).order_by("id")[num].id
     TripInfo.objects.exclude(id=chosen_route_id).delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
 
