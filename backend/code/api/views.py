@@ -246,7 +246,7 @@ def request_trips(request):
 def calculate_trip_emission_savings(trip):
     distance = 0
     prev_coord = None
-    for leg in TripLeg.objects.get(user=trip.user,trip_info=trip):
+    for leg in TripLeg.objects.get(user=trip['user'],trip_info=trip):
         coords = [(float(p["latitude"]), float(p["longitude"])) for p in leg["path"]]
         if prev_coord is None:
             prev_coord = coords[0]
