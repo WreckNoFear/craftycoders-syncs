@@ -301,7 +301,7 @@ def choose_route(request):
     current_user = request.user
     data = json.loads(request.body)
     num = data.get("chosen_num")
-    chosen_route_id = TripInfo.objects.get(user=current_user)[num].id
+    chosen_route_id = TripInfo.objects.filter(user=current_user)[num].id
     TripInfo.objects.exclude(id=chosen_route_id).delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
 
