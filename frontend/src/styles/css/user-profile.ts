@@ -27,10 +27,11 @@ export const styles = StyleSheet.create({
     marginVertical: 40,
   },
   textTitle: {
-    fontSize: 24,
+    fontSize: 32,
     fontFamily: Theme.FONT.MEDIUM,
   },
   textSubtitle: {
+    fontSize: 16,
     color: Theme.COLORS.GRAY,
   },
   logoutButton: {

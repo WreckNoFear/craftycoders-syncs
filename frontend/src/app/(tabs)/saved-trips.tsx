@@ -22,11 +22,6 @@ const SavedTrips = () => {
           <Text style={styles.title}>Saved Trips</Text>
         </View>
 
-        {/* <FlatList
-        
-          
-        /> */}
-
         {!savedTrips ||
           (savedTrips.length === 0 && (
             <View style={styles.fallbackContainer}>
@@ -40,7 +35,7 @@ const SavedTrips = () => {
             </View>
           ))}
 
-        <View style={styles.cardContainer}>
+        {/* <View style={styles.cardContainer}>
           <View style={styles.cardSection}>
             <TransportIcon type="train" />
             <Text style={styles.cardTitle}>{DATA.title}</Text>
@@ -52,7 +47,7 @@ const SavedTrips = () => {
               <Text style={styles.ecoText}>78%</Text>
             </View>
           </View>
-        </View>
+        </View> */}
       </View>
     </View>
   );

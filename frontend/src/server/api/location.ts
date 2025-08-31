@@ -24,3 +24,16 @@ export async function getTripsByLocation({ data: values }: SearchTripProps) {
     return { error: (error as Error)?.message };
   }
 }
+
+type ChooseRouteProps = { data: { chosen_num?: number | null } };
+
+export async function getChosenRoute({ data: values }: ChooseRouteProps) {
+  try {
+    const data = await makeRequest("/choose-route", "POST", values);
+
+    return data;
+  } catch (error) {
+    kdebug("Request error: ", error);
+    return { error: (error as Error)?.message };
+  }
+}
