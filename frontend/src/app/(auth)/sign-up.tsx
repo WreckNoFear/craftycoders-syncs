@@ -11,6 +11,7 @@ import { Link, router } from "expo-router";
 import { styles } from "@/src/styles/css/auth";
 import * as SecureStore from "expo-secure-store";
 import { useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const formSchema = z.object({
   username: z.string().min(1, {
@@ -65,9 +66,8 @@ export default function SignUp() {
 
       if (error || !token) throw error;
 
-      if (token) {
-        await SecureStore.setItemAsync("AUTH_TOKEN", token);
-      }
+      await SecureStore.setItemAsync("AUTH_TOKEN", token);
+      await AsyncStorage.setItem("USERNAME", data?.username);
 
       Toast.show({
         type: "success",

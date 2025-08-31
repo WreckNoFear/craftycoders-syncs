@@ -24,11 +24,6 @@ const RecentTrips = () => {
           <Text style={styles.title}>Recent Trips</Text>
         </View>
 
-        {/* <FlatList
-        
-          
-        /> */}
-
         {!recentTrips ||
           (recentTrips.length === 0 && (
             <View style={styles.fallbackContainer}>
@@ -42,7 +37,7 @@ const RecentTrips = () => {
             </View>
           ))}
 
-        <View style={styles.cardContainer}>
+        {/* <View style={styles.cardContainer}>
           <View style={styles.cardSection}>
             <TransportIcon type="train" />
             <Text style={styles.cardTitle}>{DATA.title}</Text>
@@ -54,7 +49,7 @@ const RecentTrips = () => {
               <Text style={styles.ecoText}>78%</Text>
             </View>
           </View>
-        </View>
+        </View> */}
       </View>
     </View>
   );

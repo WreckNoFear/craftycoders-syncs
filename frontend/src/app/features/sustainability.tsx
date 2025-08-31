@@ -7,13 +7,13 @@ import { BarChart } from "react-native-gifted-charts";
 
 const SustainabilityReport = () => {
   const DATA = [
-    { value: 250, label: "Mon" },
+    { value: 400, label: "Mon" },
     { value: 500, label: "Tue", frontColor: Theme.COLORS.PRIMARY },
-    { value: 745, label: "Wed", frontColor: Theme.COLORS.PRIMARY },
-    { value: 320, label: "Thu" },
-    { value: 600, label: "Fri", frontColor: Theme.COLORS.PRIMARY },
-    { value: 256, label: "Sat" },
-    { value: 300, label: "Sun" },
+    { value: 239, label: "Wed", frontColor: Theme.COLORS.PRIMARY },
+    { value: 230, label: "Thu" },
+    { value: 233, label: "Fri", frontColor: Theme.COLORS.PRIMARY },
+    { value: 123, label: "Sat" },
+    { value: 129, label: "Sun" },
   ];
 
   return (

@@ -171,4 +171,11 @@ export const styles = StyleSheet.create({
   cardInnerTitle: {
     fontFamily: Theme.FONT.MEDIUM,
   },
+  updateText: {
+    position: "absolute",
+    bottom: 80,
+    textAlign: "center",
+    width: "100%",
+    color: Theme.COLORS.GRAY,
+  },
 });
