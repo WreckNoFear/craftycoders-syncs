@@ -325,8 +325,8 @@ def choose_route(request):
     chosen_route_id = TripInfo.objects.filter(user=current_user).order_by("id")[num].id
     TripInfo.objects.exclude(id=chosen_route_id).delete()
 
-    out = CarbonFootprint.objects.update_or_create(user=current_user)
-    CarbonFootprint.objects.update_or_create(user=current_user, total_saved=out.total_saved)
+    # out = CarbonFootprint.objects.update_or_create(user=current_user)
+    # CarbonFootprint.objects.update_or_create(user=current_user, total_saved=out.total_saved)
     return JsonResponse()
 
 
