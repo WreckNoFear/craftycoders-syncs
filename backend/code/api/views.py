@@ -141,7 +141,7 @@ def request_trips(request):
             out_leg['destination'] = {'latitude':coords2[0], 'longitude':coords2[1]}
             
             travel_time += leg['duration']
-            out_leg['stopSequence'] = [stop['id'] for stop in leg['stopSequence']]
+            out_leg['stopSequence'] = leg['stopSequence']
             path = [{'latitude':x[0],'longitude':x[1]} for x in leg['coords']]
             out_leg['path'] = path
             out_journey['legs'].append(out_leg)
