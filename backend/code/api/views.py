@@ -14,7 +14,7 @@ import time
 from datetime import datetime
 import json
 tnsw = TransportNSWv2()
-from .models import TripInfo, CarbonFootprint, CrowdSourcedData, Train, TripLeg
+from .models import TripInfo, CarbonFootprint, CrowdSourcedData, Train, TripLeg, TripFootprint
 from django.utils.dateparse import parse_datetime
 
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -194,7 +194,7 @@ def request_trips(request):
                 end_longitude=float(out_leg['destination']['longitude']),
                 path = out_leg['path']
             )
-
+        TripFootprint.objects.create(trip=trip_info, carbon_emissions_saved_kg=calculate_trip_emission_savings(trip_info))
 
         out_dict["journeys"].append(out_journey)
     return Response(out_dict)
@@ -245,15 +245,16 @@ def request_trips(request):
 
 def calculate_trip_emission_savings(trip):
     distance = 0
+    prev_coord = None
     for leg in TripLeg.objects.get(user=trip.user,trip=trip):
-        coords = [(p["latitude"], p["longitude"]) for p in leg["path"]]
+        coords = [(float(p["latitude"]), float(p["longitude"])) for p in leg["path"]]
         if prev_coord is None:
             prev_coord = coords[0]
             coords = coords[1:]
         for coord in coords:
             distance += haversine(prev_coord, coord)
-            
-    # distance = 
+    carbon_emissions_saved_kg = distance * 0.17
+    return carbon_emissions_saved_kg
     
 
 
@@ -323,7 +324,11 @@ def choose_route(request):
     print(len(TripInfo.objects.filter(user=current_user)))
     chosen_route_id = TripInfo.objects.filter(user=current_user).order_by("id")[num].id
     TripInfo.objects.exclude(id=chosen_route_id).delete()
-    return Response(status=status.HTTP_204_NO_CONTENT)
+
+    out = CarbonFootprint.objects.update_or_create(user=current_user)
+    CarbonFootprint.objects.update_or_create(user=current_user, total_saved=out.total_saved)
+    return JsonResponse()
+
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
@@ -343,6 +348,7 @@ def current_train(request):
             #we know we passed station so person got off
             continue
         return Response(leg.train)
+    
+
     #trip completed
     return Response(status=status.HTTP_400_BAD_REQUEST)
-
